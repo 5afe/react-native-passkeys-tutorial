@@ -264,36 +264,48 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.titleContainer}>
-        <Text>Safe Passkeys demo</Text>
+        <Text style={styles.titleText}>Safe Passkeys Demo</Text>
       </View>
 
-      <View>
-        <Text style={styles.sectionContainer}>Safe Address</Text>
-        <Text>{safeAddress}</Text>
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>Safe Address</Text>
+        <Text style={styles.text}>{safeAddress}</Text>
       </View>
 
       {!isDeployed && (
         <View style={styles.sectionContainer}>
-          <Text>⚠️ The account is not activated yet</Text>
-
-          <Button title="Activate account" onPress={handleActivateAccount} />
+          <Text style={styles.text}>⚠️ The account is not activated yet</Text>
+          <View style={styles.button}>
+            <Button title="Activate Account" onPress={handleActivateAccount} />
+          </View>
         </View>
       )}
 
       {isDeployed && (
         <>
           {!passkeySigner && (
-            <Button title="Add passkey owner" onPress={handleAddPasskeyOwner} />
+            <View style={styles.button}>
+              <Button
+                title="Add Passkey Owner"
+                onPress={handleAddPasskeyOwner}
+              />
+            </View>
           )}
 
           {passkeySigner && (
             <>
-              <Button title="Sign message" onPress={handleSignMessage} />
-              <Button
-                title="Send dummy transaction"
-                onPress={handleSendTransaction}
-              />
-              <Button title="Remove passkey" onPress={handleRemovePasskey} />
+              <View style={styles.button}>
+                <Button title="Sign Message" onPress={handleSignMessage} />
+              </View>
+              <View style={styles.button}>
+                <Button
+                  title="Send Dummy Transaction"
+                  onPress={handleSendTransaction}
+                />
+              </View>
+              <View style={styles.button}>
+                <Button title="Remove Passkey" onPress={handleRemovePasskey} />
+              </View>
             </>
           )}
         </>
@@ -306,28 +318,35 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    alignItems: "center",
+    padding: 16,
   },
   titleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
+    marginBottom: 16,
+    paddingHorizontal: 16,
   },
-  sectionContainer: {
-    gap: 8,
+  titleText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "left",
     marginBottom: 8,
   },
-  safeLogo: {
-    height: 160,
-    width: 200,
-    bottom: 10,
-    position: "absolute",
+  sectionContainer: {
+    marginBottom: 16,
+    paddingHorizontal: 16,
   },
-  input: {
-    height: 40,
-    margin: 12,
-    borderWidth: 1,
-    padding: 10,
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  text: {
+    fontSize: 16,
+    textAlign: "left",
+    marginBottom: 8,
+  },
+  button: {
+    marginVertical: 8,
+    paddingHorizontal: 16,
   },
   loadingContainer: {
     flex: 1,
