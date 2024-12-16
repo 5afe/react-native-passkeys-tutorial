@@ -5,55 +5,9 @@ import { create, get } from "react-native-passkeys";
 const RP_NAME = "Safe Smart Account";
 const USER_DISPLAY_NAME = "Safe account";
 const USER_NAME = "safe-account";
-const DOMAIN = "469a-47-63-153-71.ngrok-free.app";
+const DOMAIN = "bba3-159-147-239-227.ngrok-free.app";
 const CHALLENGE = "the-challenge";
 const USER_ID = "my-user-id";
-
-export function bufferToBase64URLString(buffer: ArrayBuffer): string {
-  const bytes = new Uint8Array(buffer);
-  let str = "";
-
-  for (const charCode of bytes) {
-    str += String.fromCharCode(charCode);
-  }
-
-  const base64String = btoa(str);
-
-  return base64String.replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
-}
-
-export function utf8StringToBuffer(value: string): ArrayBuffer {
-  return new TextEncoder().encode(value);
-}
-
-function getBinaryString(buffer: any) {
-  const byteArray = new Uint8Array(buffer);
-  return Array.from(byteArray)
-    .map((byte) => String.fromCharCode(byte))
-    .join("");
-}
-
-function bufferSourceToBase64Url(bufferSource: any) {
-  const binaryString = getBinaryString(bufferSource);
-  const base64String = RNBase64.encode(binaryString);
-  return base64String
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
-}
-
-function base64ToArrayBuffer(base64: string) {
-  base64 = base64.replace(/-/g, "+").replace(/_/g, "/");
-  while (base64.length % 4 !== 0) {
-    base64 += "=";
-  }
-  const binaryString = atob(base64);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes.buffer;
-}
 
 export async function getPassKey(
   options?: CredentialRequestOptions
@@ -124,7 +78,53 @@ export async function createPassKey() {
           publicKey:
             credentialRequestJson as unknown as PublicKeyCredentialCreationOptions,
         })
-      : await create(credentialRequestJson as any);
+      : await create(credentialRequestJson as Parameters<typeof create>[0]);
 
   return passkey;
+}
+
+function bufferToBase64URLString(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let str = "";
+
+  for (const charCode of bytes) {
+    str += String.fromCharCode(charCode);
+  }
+
+  const base64String = btoa(str);
+
+  return base64String.replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+}
+
+function utf8StringToBuffer(value: string): ArrayBuffer {
+  return new TextEncoder().encode(value);
+}
+
+function getBinaryString(buffer: any) {
+  const byteArray = new Uint8Array(buffer);
+  return Array.from(byteArray)
+    .map((byte) => String.fromCharCode(byte))
+    .join("");
+}
+
+function bufferSourceToBase64Url(bufferSource: any) {
+  const binaryString = getBinaryString(bufferSource);
+  const base64String = RNBase64.encode(binaryString);
+  return base64String
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
+function base64ToArrayBuffer(base64: string) {
+  base64 = base64.replace(/-/g, "+").replace(/_/g, "/");
+  while (base64.length % 4 !== 0) {
+    base64 += "=";
+  }
+  const binaryString = atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes.buffer;
 }

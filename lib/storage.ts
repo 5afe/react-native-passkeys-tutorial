@@ -10,11 +10,7 @@ export async function storePassKey(passkey: PasskeyArgType, label: string) {
   if (isWeb) {
     localStorage.setItem(label, serializedPasskey);
   } else {
-    try {
-      await AsyncStorage.setItem(label, serializedPasskey);
-    } catch (error) {
-      console.error("Error storing the passkey", error);
-    }
+    await AsyncStorage.setItem(label, serializedPasskey);
   }
 }
 
@@ -23,13 +19,9 @@ export async function getStoredPassKey(label: string) {
     const passkey = localStorage.getItem(label);
     return passkey ? JSON.parse(passkey) : undefined;
   } else {
-    try {
-      const passkey = await AsyncStorage.getItem(label);
+    const passkey = await AsyncStorage.getItem(label);
 
-      return passkey ? JSON.parse(passkey) : undefined;
-    } catch (error) {
-      console.error("Error retrieving the passkey", error);
-    }
+    return passkey ? JSON.parse(passkey) : undefined;
   }
 }
 
@@ -37,10 +29,6 @@ export async function removeStoredPassKey(label: string) {
   if (isWeb) {
     localStorage.removeItem(label);
   } else {
-    try {
-      await AsyncStorage.removeItem(label);
-    } catch (error) {
-      console.error("Error removing the passkey", error);
-    }
+    await AsyncStorage.removeItem(label);
   }
 }

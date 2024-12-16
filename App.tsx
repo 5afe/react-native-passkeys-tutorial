@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import prompt from "react-native-prompt-android";
-import Safe, { PasskeyArgType, SigningMethod } from "@safe-global/protocol-kit";
-import { WalletClient, Transport, Chain, Hex, Account } from "viem";
-import { waitForTransactionReceipt } from "viem/actions";
+import Safe, { PasskeyArgType } from "@safe-global/protocol-kit";
 import {
   View,
   Text,
@@ -19,6 +17,14 @@ import {
   storePassKey,
 } from "./lib/storage";
 import { createPassKey, getPassKey } from "./lib/passkeys";
+import {
+  activateAccount,
+  addPasskeyOwner,
+  sendDummyPasskeyTransaction,
+  signPasskeyMessage,
+} from "./lib/safe";
+
+const PASSKEY_NAME = "safe-owner";
 
 export default function App() {
   const [protocolKit, setProtocolKit] = useState<Safe | null>(null);
@@ -71,7 +77,7 @@ export default function App() {
 
   useEffect(() => {
     (async () => {
-      const storedPasskey = await getStoredPassKey("safe-owner");
+      const storedPasskey = await getStoredPassKey(PASSKEY_NAME);
 
       setPasskeySigner(storedPasskey);
     })();
@@ -96,27 +102,7 @@ export default function App() {
 
     setIsLoading(true);
 
-    const safeDeploymentTransaction =
-      await protocolKit.createSafeDeploymentTransaction();
-
-    const signer = (await protocolKit
-      .getSafeProvider()
-      .getExternalSigner()) as WalletClient<Transport, Chain, Account>;
-    const client = protocolKit.getSafeProvider().getExternalProvider();
-
-    if (!signer)
-      throw new Error(
-        "SafeProvider must be initialized with a signer to use this function"
-      );
-
-    const hash = await signer.sendTransaction({
-      to: safeDeploymentTransaction.to as `0x${string}`,
-      data: safeDeploymentTransaction.data as Hex,
-      value: BigInt(safeDeploymentTransaction.value),
-      account: signer.account,
-    });
-
-    const receipt = await waitForTransactionReceipt(client, { hash });
+    const receipt = await activateAccount(protocolKit);
 
     if (receipt.transactionHash) {
       setIsDeployed(true);
@@ -150,18 +136,9 @@ export default function App() {
 
     setIsLoading(true);
 
-    const addOwnerTx = await protocolKit.createAddOwnerTx({
-      passkey: signer,
-    });
+    await addPasskeyOwner(protocolKit, signer);
 
-    const signedAddOwnerTx = await protocolKit.signTransaction(
-      addOwnerTx,
-      SigningMethod.ETH_SIGN
-    );
-
-    await protocolKit.executeTransaction(signedAddOwnerTx);
-
-    await storePassKey(signer, "safe-owner");
+    await storePassKey(signer, PASSKEY_NAME);
 
     const passkeySignerProtocolKitInstance = await Safe.init({
       provider: process.env.EXPO_PUBLIC_RPC_URL,
@@ -189,9 +166,9 @@ export default function App() {
         {
           text: "Sign",
           onPress: async (message: string) => {
-            const signedMessage = await passkeySignerProtocolKit.signMessage(
-              passkeySignerProtocolKit.createMessage(message),
-              SigningMethod.ETH_SIGN
+            const signedMessage = await signPasskeyMessage(
+              passkeySignerProtocolKit,
+              message
             );
 
             if (Platform.OS === "web") {
@@ -224,36 +201,25 @@ export default function App() {
 
     setIsLoading(true);
 
-    const transaction = {
-      to: safeAddress,
-      value: "0",
-      data: "0x",
-    };
-
-    const safeTransaction = await passkeySignerProtocolKit.createTransaction({
-      transactions: [transaction],
-    });
-
-    const signedTransaction = await passkeySignerProtocolKit.signTransaction(
-      safeTransaction
+    const receipt = await sendDummyPasskeyTransaction(
+      protocolKit,
+      passkeySignerProtocolKit,
+      safeAddress
     );
-
-    const txResult = await protocolKit.executeTransaction(signedTransaction);
 
     setIsLoading(false);
 
-    if (txResult.hash) {
+    if (receipt.transactionHash) {
       if (Platform.OS === "web") {
-        window.alert(txResult.hash as string);
+        window.alert(receipt.transactionHash);
       } else {
-        console.log("txHash", txResult.hash);
-        Alert.alert("Transaction hash", txResult.hash);
+        Alert.alert("Transaction hash", receipt.transactionHash);
       }
     }
   };
 
   const handleRemovePasskey = async () => {
-    removeStoredPassKey("safe-owner");
+    removeStoredPassKey(PASSKEY_NAME);
     setPasskeySigner(null);
   };
 
