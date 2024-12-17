@@ -16,7 +16,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.safeglobal.reactnativepasskeys",
       "associatedDomains": [
-        "webcredentials:bba3-159-147-239-227.ngrok-free.app?mode=developer"
+        "webcredentials:add_your_domain_here?mode=developer"
       ]
     },
     "android": {
